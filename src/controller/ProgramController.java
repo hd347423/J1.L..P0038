@@ -13,6 +13,8 @@ import utils.Constants;
 import utils.Inputter;
 import io.FileReader;
 import io.FileWriter;
+import java.math.RoundingMode;
+import utils.Formatter;
 
 import view.ConsoleView;
 
@@ -97,28 +99,32 @@ public class ProgramController {
             String carBrand = inputter.readCarBrand("Enter car brand: ", false);
 
             BigDecimal value = inputter.readVehicleValue("Enter value: ", false);
-            LocalDate date = inputter.readDate("Enter date (dd/MM/yyyy): ", false, Constants.DATE_PAST);
+            LocalDate date = inputter.readDate("Enter date (MM/dd/yyyy): ", false);
             String registrationPlace = inputter.readRegistrationPlace("Enter registration place: ", false);
             int vehicleType = inputter.readVehicleType("Enter type: ", false);
 
             Car car = new Car(licensePlate, carOwner, carBrand, value, date, registrationPlace, vehicleType);
-            carManager.add(car);
-            dataChanged = true;
-            consoleView.showMessage("Car added successfully");
-            consoleView.showMessage(car.toString());
+            if (carManager.add(car)) {
+                dataChanged = true;
+                consoleView.showMessage("Car added successfully");
+                consoleView.showCar(car);
+            } else {
+                consoleView.showMessage("Failed to add car");
+            }
         } while (inputter.readYesNo("Do you want to add another car (Y/N): "));
     }
 
     private void findCar() {
         do {
-            String licensePlate = inputter.readLicensePlate("Enter license plate: ");
+            String licensePlate = inputter.readLicensePlateLoose("Enter license plate: ");
 
             Car car = carManager.findById(licensePlate);
             if (car == null) {
                 consoleView.showMessage("Unregistered vehicle");
 
             } else {
-                consoleView.showMessage(car.toString());
+                consoleView.showCar(car);
+
             }
         } while (inputter.readYesNo("Do you want to find another car(Y/N): "));
     }
@@ -138,11 +144,12 @@ public class ProgramController {
         if (newBrand == null) {
             newBrand = oldCar.getCarBrand();
         }
-        BigDecimal newValue = inputter.readVehicleValue("Enter new car value (old: " + oldCar.getValue() + "):", true);
+        BigDecimal newValue = inputter.readVehicleValue("Enter new car value (old: " + Formatter.formatMoney(oldCar.getValue()) + "):", true);
         if (newValue == null) {
             newValue = oldCar.getValue();
         }
-        LocalDate newDate = inputter.readDate("Enter new registration date (old: " + oldCar.getRegistrationDate() + "):", true, Constants.DATE_PAST);
+        LocalDate newDate = inputter.readDate("Enter new registration date (old: " + oldCar.getRegistrationDate().format(Formatter.DTF) + ", MM/dd/yyyy): ", true);
+
         if (newDate == null) {
             newDate = oldCar.getRegistrationDate();
         }
@@ -154,17 +161,29 @@ public class ProgramController {
         if (newType == -1) {
             newType = oldCar.getVehicleType();
         }
+        boolean changed = !newOwner.equals(oldCar.getCarOwner())
+                || !newBrand.equals(oldCar.getCarBrand())
+                || newValue.compareTo(oldCar.getValue()) != 0
+                || !newDate.equals(oldCar.getRegistrationDate())
+                || !newPlace.equals(oldCar.getRegistrationPlace())
+                || newType != oldCar.getVehicleType();
+     
         Car newCar = new Car(licensePlate, newOwner, newBrand, newValue, newDate, newPlace, newType);
-        carManager.update(licensePlate, newCar);
-        dataChanged = true;
+        if (carManager.update(licensePlate, newCar)) {
+            if (changed) {
+                dataChanged = true;
+            }
+            consoleView.showMessage("Car updated successfully");
+            consoleView.showCar(newCar);
 
-        consoleView.showMessage("Car updated successfully");
-        consoleView.showMessage(newCar.toString());
+        } else {
+            consoleView.showMessage("Failed to update car");
+        }
 
     }
 
     private void deleteCar() {
-        String licensePlate = inputter.readLicensePlate("Enter license plate: ");
+        String licensePlate = inputter.readLicensePlateLoose("Enter license plate: ");
         Car car = carManager.findById(licensePlate);
         if (car == null) {
             consoleView.showMessage("Unregistered vehicle");
@@ -178,9 +197,12 @@ public class ProgramController {
             consoleView.showMessage("Delete cancelled");
             return;
         }
-        carManager.remove(licensePlate);
-        dataChanged = true;
-        consoleView.showMessage("Car deleted successfully");
+        if (carManager.remove(licensePlate)) {
+            dataChanged = true;
+            consoleView.showMessage("Car deleted successfully");
+        } else {
+            consoleView.showMessage("Failed to delete car");
+        }
     }
 
     private void addInsurance() {
@@ -195,16 +217,20 @@ public class ProgramController {
                 consoleView.showMessage("Insurance id already exists");
                 continue;
             }
-            LocalDate establishedDate = inputter.readDate("Enter established date (dd/MM/yyyy): ", false, Constants.DATE_FUTURE);
+            LocalDate establishedDate = inputter.readDate("Enter established date (MM/dd/yyyy): ", false);
             Car car;
             String licensePlate;
             while (true) {
-                licensePlate = inputter.readLicensePlate("Enter license plate: ");
+                licensePlate = inputter.readLicensePlateLoose("Enter license plate: ");
+                if (licensePlate.isEmpty()) {
+                    consoleView.showMessage("Cancelled");
+                    return;
+                }
                 car = carManager.findById(licensePlate);
                 if (car != null) {
                     break;
                 }
-                consoleView.showMessage("Unregistered vehicle");
+                consoleView.showMessage("Unregistered vehicle. Try again or press Enter to cancel.");
             }
             String customerName = inputter.readCustomerName("Enter customer name: ", false);
             int insurancePeriod = inputter.readInsurancePeriod("Enter insurance period (12, 24, 36): ", false);
@@ -217,11 +243,14 @@ public class ProgramController {
             } else {
                 fees = value.multiply(new BigDecimal("0.15").multiply(new BigDecimal("3")));
             }
+            fees = fees.setScale(0, RoundingMode.HALF_UP);
             InsuranceStatement ins = new InsuranceStatement(insuranceId, establishedDate, licensePlate, customerName, insurancePeriod, fees);
-            insuranceManager.add(ins);
-            dataChanged = true;
-            consoleView.showMessage("Insurance added successfully");
-            consoleView.showMessage(ins.toString());
+            if (insuranceManager.add(ins)) {
+                dataChanged = true;
+                consoleView.showInsurance(ins);
+            } else {
+                consoleView.showMessage("Fail to add insurance");
+            }
         } while (inputter.readYesNo("Do you want to add another insurance (Y/N): "));
     }
 
@@ -265,26 +294,27 @@ public class ProgramController {
         }
     }
 
-    private void loadData() {
-        Object carObj = FileReader.read(Constants.CAR_FILE);
-        boolean hasCar = false;
-        if (carObj != null) {
-            carManager.loadFromObject(carObj);
-            hasCar = true;
-        }
-        Object insuranceObj = FileReader.read(Constants.INSURANCE_FILE);
-        boolean hasInsurance = false;
-        if (insuranceObj != null) {
-            insuranceManager.loadFromObject(insuranceObj);
-            hasInsurance = true;
-        }
-        if (hasCar || hasInsurance) {
-            consoleView.showMessage("Data loaded successfully");
-        } else {
-            consoleView.showMessage("No existing data files found. Ready with new database.");
-        }
-
+private void loadData() {
+    Object carObj = FileReader.read(Constants.CAR_FILE);
+    if (carObj != null) {
+        carManager.loadFromObject(carObj);
+        consoleView.showMessage("Car data loaded");
+    } else {
+        carManager.clear();
+        consoleView.showMessage("No car data file found");
     }
+    
+    Object insObj = FileReader.read(Constants.INSURANCE_FILE);
+    if (insObj != null) {
+        insuranceManager.loadFromObject(insObj);
+        consoleView.showMessage("Insurance data loaded");
+    } else {
+        insuranceManager.clear();
+        consoleView.showMessage("No insurance data file found");
+    }
+    
+    dataChanged = false;
+}
 
     private boolean quit() {
         if (!inputter.readYesNo("Are you sure want to quit (Y/N)")) {

@@ -24,14 +24,14 @@ public class CarManager extends AbstractManager<Car> implements IReportable {
     public boolean add(Car car) {
         if (map.containsKey(car.getLicensePlate())) {
             return false;
-        } else {
+        } 
             map.put(car.getLicensePlate(), car);
-        }
+        
         return true;
     }
 
     public boolean update(String id, Car car) {
-        if (map.containsKey(id) == false) {
+        if (!map.containsKey(id)) {
             return false;
         }
         map.put(id, car);
@@ -65,7 +65,7 @@ public class CarManager extends AbstractManager<Car> implements IReportable {
                 if (sortField.equalsIgnoreCase("License plate")) {
                     return c1.getLicensePlate().compareTo(c2.getLicensePlate());
                 } else if (sortField.equalsIgnoreCase("Car owner")) {
-                    return c1.getCarOwner().compareTo(c2.getCarOwner());
+                    return c1.getCarOwner().compareToIgnoreCase(c2.getCarOwner());
                 } else if (sortField.equalsIgnoreCase("Registration Date")) {
                     return c1.getRegistrationDate().compareTo(c2.getRegistrationDate());
                 } else if (sortField.equalsIgnoreCase("Vehicle type")) {

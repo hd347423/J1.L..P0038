@@ -22,6 +22,18 @@ public class ConsoleView {
     public ConsoleView() {
     }
 
+    public void showInsurance(InsuranceStatement is) {
+        System.out.println(String.format("%-4s | %-12s | %-12s | %-15s | %-20s | %-12s | %s",
+        "No.", "Insurance Id", "Est Date", "License Plate", "Customer", "Period", "Fees"));
+        System.out.println(String.format("%-4d | %s", 1, is.toString()));
+    }
+    public void showCar(Car car) {
+    System.out.println(String.format("%-4s | %-15s | %-12s | %-20s | %-12s | %-12s | %-12s | %-15s",
+        "No.", "License Plate", "Reg Date", "Car Owner", "Brand", "Type", "Value", "Place"));
+    System.out.println(String.format("%-4d | %s", 1, car.toString()));
+}
+    
+    
     public void showMenu() {
         System.out.println("========== CAR INSURANCE MANAGEMENT ==========");
         for (int i = 0; i < MENU_ITEMS.length; i++) {

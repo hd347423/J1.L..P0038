@@ -83,25 +83,19 @@ public class Car extends Entity {
     }
 
     @Override
-    public String toString() {
-        String dateStr = registrationDate.format(Formatter.DTF);
-        String money = Formatter.formatMoney(value);
-        System.out.println(  String.format("%-15s | %-16s | %-20s | %-12s | %-12s | %s",
-                "License Plate",
-                "RegistrationDate",
-                "Owner",
-                "Brand",
-                "Vehicle Type",
-                "Value"));
-       return String.format("%-15s | %-16s | %-20s | %-12s | %-12d | %s", 
+
+public String toString() {
+    String dateStr = registrationDate.format(Formatter.DTF);
+    String money = Formatter.formatMoney(value);
+    return String.format("%-15s | %-12s | %-20s | %-12s | %-12d | %-12s | %-15s",
             licensePlate,
             dateStr,
             carOwner,
             carBrand,
             vehicleType,
-            money);
-        
-    }
+            money,
+            registrationPlace);
+}
 
 
 }

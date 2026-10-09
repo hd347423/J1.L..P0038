@@ -47,7 +47,7 @@ public class Inputter {
 
     }
 
-    public String readLicensePlate(String prompt) {
+  public String readLicensePlate(String prompt) {
         while (true) {
             String raw = readString(prompt);
             if (raw.isEmpty()) {
@@ -63,6 +63,7 @@ public class Inputter {
 
     }
 
+
     public String readInsuranceId(String prompt) {
         while (true) {
             String input = readString(prompt);
@@ -74,7 +75,7 @@ public class Inputter {
         }
     }
 
-    public LocalDate readDate(String prompt, boolean allowBlank, String dataType) {
+    public LocalDate readDate(String prompt, boolean allowBlank) {
         while (true) {
             String input = readString(prompt);
             if (input.isEmpty()) {
@@ -85,22 +86,11 @@ public class Inputter {
                 continue;
             }
             LocalDate date = Formatter.parseFlexibleDate(input);
-            if (date == null) {
-                System.out.println("Invalid date! Please use dd/MM/yyyy (e.g., 01/12/2025 for 1st of December)");
-                continue;
-            }
-            if (dataType.equals(Constants.DATE_PAST)) {
-                if (date.isBefore(LocalDate.now())) {
-                    return date;
-                }
-            } else {
-                if (date.isAfter(LocalDate.now())) {
-                    return date;
-                }
-
-                System.out.println("Date must be in the future");
+            if (date != null) {
+                return date;
 
             }
+            System.out.println("Invalid date! Please use MM/dd/yyyy ");
 
         }
     }
@@ -113,6 +103,10 @@ public class Inputter {
                     return null;
                 }
                 System.out.println("Value cannot be blank");
+                continue;
+            }
+            if (!input.matches("^\\d+$")) {
+                System.out.println("Value must be a positive integer");
                 continue;
             }
 
@@ -208,6 +202,11 @@ public class Inputter {
             return input;
 
         }
+    }
+    
+    public String readLicensePlateLoose(String prompt) {
+        String raw = readString(prompt);
+        return normalizeLicensePlate(raw);
     }
 
     public String readRegistrationPlace(String prompt, boolean allowBlank) {

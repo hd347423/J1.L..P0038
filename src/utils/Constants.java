@@ -18,7 +18,5 @@ public class Constants {
     public static final String PARAM_SORT_FIELD = "sortField";
     public static final String PARAM_YEAR = "year";
 
-    // Date types
-    public static final String DATE_PAST = "PAST";
-    public static final String DATE_FUTURE = "FUTURE";
+
 }

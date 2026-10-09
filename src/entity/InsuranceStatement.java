@@ -71,25 +71,18 @@ public class InsuranceStatement extends Entity{
         this.insuranceFees = insuranceFees;
     }
 
-    @Override
-    public String toString() {
-        String dateStr = establishedDate.format(Formatter.DTF);
-        String fees = Formatter.formatMoney(insuranceFees);
-        System.out.println(String.format("%-12s | %-16s | %-15s | %-20s | %-16s | %s ",
-                "Insurance Id",
-                "Established Date",
-                "License Plate",
-                "Customer Name",
-                "Insurance Period",
-                "Fees"));
-        return String.format("%-12s | %-16s | %-15s | %-20s | %-16d | %s ", 
-                insuranceId,
-                dateStr,
-                licensePlate,
-                customerName,
-                insurancePeriod,
-                fees);
-    }
+ @Override
+public String toString() {
+    String dateStr = establishedDate.format(Formatter.DTF);
+    String fees = Formatter.formatMoney(insuranceFees);
+    return String.format("%-12s | %-12s | %-15s | %-20s | %-12d | %-12s",
+            insuranceId,
+            dateStr,
+            licensePlate,
+            customerName,
+            insurancePeriod,
+            fees);
+}
     
 
 }

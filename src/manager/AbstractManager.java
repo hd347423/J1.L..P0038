@@ -24,10 +24,14 @@ public abstract class AbstractManager<T extends Entity> {
     public Map<String, T> getMap() {
         return map;
     }
+    @SuppressWarnings("unchecked")
     public void loadFromObject(Object obj) {
         if (obj instanceof Map) {
             map = (Map<String, T>) obj;
         }
     }
+    public void clear() {
+    map.clear();
+}
     public abstract boolean add(T obj);
 }
